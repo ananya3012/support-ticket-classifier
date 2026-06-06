@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Ticket Classifier | Intelligent Support</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <div class="bg-gradient"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="status-pill">
+    ✨ AI Powered
+    </div>
+    
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🎫</div>
+            </div>
+            <h1>Support Ticket Intelligence</h1>
+            <p>AI-powered support operations with intelligent ticket routing and prioritization.</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Input Card -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="icon">✍️</span>
+                    Submit Ticket
+                </h2>
+
+                <form id="ticketForm">
+                    <div class="form-group">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-input" id="subject" placeholder="Brief summary of the issue..."
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" id="description" placeholder="Describe the issue in detail..."
+                            required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn" id="submitBtn">
+                        <span id="btnText">🚀 Classify Ticket</span>
+                        <div class="spinner" id="spinner" style="display: none;"></div>
+                    </button>
+                </form>
+
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="clearForm()">
+                        🗑️ Clear
+                    </button>
+                    <button class="quick-btn" onclick="loadRandomExample()">
+                        🎲 Random Example
+                    </button>
+                </div>
+
+                <div class="examples">
+                    <div class="examples-title">Quick Examples:</div>
+                    <div class="example-chips">
+                        <span class="example-chip" onclick="loadExample('billing')">💳 Billing Issue</span>
+                        <span class="example-chip" onclick="loadExample('technical')">🔧 Technical Bug</span>
+                        <span class="example-chip" onclick="loadExample('account')">👤 Account Help</span>
+                        <span class="example-chip" onclick="loadExample('feature')">💡 Feature Request</span>
+                        <span class="example-chip" onclick="loadExample('general')">❓ General Question</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Card -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="icon">🎯</span>
+                    Classification Results
+                </h2>
+
+                <div class="results" id="results">
+                    <!-- Category Result -->
+                    <div class="result-item">
+                        <div class="result-header">
+                            <span class="result-label">Category</span>
+                            <div class="result-value">
+                                <span class="result-badge" id="categoryBadge">-</span>
+                            </div>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="categoryConfidence"
+                                style="width: 0%; background: var(--primary);"></div>
+                        </div>
+                        <div class="confidence-text" id="categoryConfidenceText">Confidence: -</div>
+
+                        <div class="probabilities">
+                            <div class="prob-title" onclick="toggleProbs('category')">
+                                <span id="categoryArrow">▶</span> All Category Probabilities
+                            </div>
+                            <div class="prob-list" id="categoryProbs"></div>
+                        </div>
+                    </div>
+
+                    <!-- Priority Result -->
+                    <div class="result-item">
+                        <div class="result-header">
+                            <span class="result-label">Priority</span>
+                            <div class="result-value">
+                                <span class="result-badge" id="priorityBadge">-</span>
+                            </div>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="priorityConfidence"
+                                style="width: 0%; background: var(--secondary);"></div>
+                        </div>
+                        <div class="confidence-text" id="priorityConfidenceText">Confidence: -</div>
+
+                        <div class="probabilities">
+                            <div class="prob-title" onclick="toggleProbs('priority')">
+                                <span id="priorityArrow">▶</span> All Priority Probabilities
+                            </div>
+                            <div class="prob-list" id="priorityProbs"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalPredictions">0</div>
+                        <div class="stat-label">Predictions</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avgConfidence">-</div>
+                        <div class="stat-label">Avg Confidence</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="responseTime">-</div>
+                        <div class="stat-label">Response Time</div>
+                    </div>
+                </div>
+
+                <div class="history-section">
+                    <h3>Recent Predictions</h3>
+                    <button
+                        class="history-clear"
+                        onclick="clearHistory()">
+                        Clear
+                    </button>
+                        <div id="historyList">
+                            <p class="history-empty">
+                                No predictions yet
+                            </p>
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Powered by TF-IDF + Logistic Regression • Built with FastAPI</p>
+            <p style="margin-top: 8px;">
+                <a href="/docs" target="_blank">📚 API Docs</a> •
+                <a href="/health" target="_blank">💚 Health Check</a> •
+                <a href="/metrics" target="_blank">📊 Metrics</a>
+            </p>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+<script src="/static/script.js"></script>
+</body>
+
+</html>

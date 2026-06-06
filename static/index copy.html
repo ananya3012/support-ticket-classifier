@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Ticket Classifier | Intelligent Support</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #BFA2DB;
+            --primary-dark: #A78CC8;
+            --primary-light: #D8C4EA;
+
+            --secondary: #BFD8B8;
+            --accent: #F2D6C9;
+
+            --danger: #D98C8C;
+            --warning: #E8C4A2;
+
+            --bg-dark: #F7F4EF;
+            --bg-card: rgba(255,255,255,0.88);
+            --bg-glass: rgba(255,255,255,0.65);
+
+            --text-primary: #3A3A3A;
+            --text-secondary: #6F6F6F;
+            --text-muted: #9A9A9A;
+
+            --border: rgba(0,0,0,0.05);
+
+            --shadow:
+                0 10px 30px rgba(0,0,0,0.05);
+
+            --radius: 24px;
+
+            --transition: all .3s ease;
+        }
+
+            
+        .history-section {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border);
+        }
+
+        .history-section h3 {
+            margin-bottom: 16px;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            margin-bottom: 16px;
+        }
+
+        .history-clear {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .history-clear:hover {
+            background: rgba(191,162,219,.15);
+            color: var(--text-primary);
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+
+            padding: 14px 0;
+
+            border-bottom: 1px solid rgba(0,0,0,.05);
+        }
+
+        .history-main {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .history-priority-chip {
+            font-size: 0.75rem;
+
+            padding: 4px 10px;
+
+            border-radius: 999px;
+
+            background: rgba(191,162,219,.15);
+
+            color: #7A669D;
+        }
+
+        .history-time {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .history-confidence {
+            background: rgba(191,162,219,.12);
+            color: #7A669D;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .history-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .history-left {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-category {
+            font-weight: 600;
+        }
+
+        .history-priority {
+            font-size: .85rem;
+            color: var(--text-secondary);
+        }
+
+        .history-empty {
+            color: var(--text-muted);
+            font-size: .9rem;
+        }
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+
+            background:
+                radial-gradient(
+                    circle at left center,
+                    rgba(191,162,219,.10),
+                    transparent 35%
+                ),
+
+                radial-gradient(
+                    circle at right center,
+                    rgba(191,162,219,.10),
+                    transparent 35%
+                );
+
+            z-index: -1;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1.02);
+            }
+        }
+
+        /* Floating Orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(99, 102, 241, 0.3);
+            top: -100px;
+            left: -100px;
+        }
+
+        .orb-2 {
+            width: 300px;
+            height: 300px;
+            background: rgba(16, 185, 129, 0.2);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }
+
+        .orb-3 {
+            width: 200px;
+            height: 200px;
+            background: rgba(245, 158, 11, 0.2);
+            top: 50%;
+            right: 20%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            25% {
+                transform: translate(30px, 30px) rotate(5deg);
+            }
+
+            50% {
+                transform: translate(0, 50px) rotate(0deg);
+            }
+
+            75% {
+                transform: translate(-30px, 30px) rotate(-5deg);
+            }
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 18px;
+            color: #2F2F2F;
+            background: none;
+            -webkit-text-fill-color: unset;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card */
+        .card {
+            background: rgba(255,255,255,.8);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(0,0,0,.05);
+            border-radius: 28px;
+            padding: 32px;
+            box-shadow:
+                0 10px 30px rgba(0,0,0,.05);
+        }
+
+        .card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+        }
+
+        .card-title .icon {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-glass);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            background: #FFFFFF;
+            border: 1px solid #ECECEC;
+            border-radius: 18px;
+            padding: 14px 18px;
+            font-family: inherit;
+            font-size: 1rem;
+            color: #333;
+            transition: var(--transition);
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            border-color: #BFA2DB;
+            box-shadow:
+            0 0 0 4px rgba(191,162,219,.2);
+        }
+
+        .form-input::placeholder,
+        .form-textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        /* Button */
+
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px 24px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: #A78CC8;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Results */
+        .results {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: var(--transition);
+        }
+
+        .results.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-item {
+            background: var(--bg-glass);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .result-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-badge {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Category Colors */
+        .category-billing {
+            background: #DCCEF2;
+            color: #5B4C75;
+        }
+
+        .category-technical {
+            background: #D8EAF4;
+            color: #446173;
+        }
+
+        .category-account {
+            background: #D8F0DD;
+            color: #47644D;
+        }
+
+        .category-feature {
+            background: #F7E1D5;
+            color: #7A5A4A;
+        }
+
+        .category-general {
+            background: #ECE7E2;
+            color: #5D5D5D;
+        }
+
+        /* Priority Colors */
+        .priority-critical {
+            background: #F3D4D4;
+            color: #8B4A4A;
+        }
+
+        .priority-high {
+            background: #F7E1D5;
+            color: #8A5A2A;
+        }
+
+        .priority-medium {
+            background: #F6EFCF;
+            color: #86713A;
+        }
+
+        .priority-low {
+            background: #D8F0DD;
+            color: #47644D;
+        }
+        /* Confidence Bar */
+        .confidence-bar {
+            height: 8px;
+            background: var(--bg-glass);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease-out;
+        }
+
+        .confidence-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            text-align: right;
+        }
+
+        /* Probabilities */
+        .probabilities {
+            margin-top: 20px;
+        }
+
+        .prob-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .prob-title:hover {
+            color: var(--text-primary);
+        }
+
+        .prob-list {
+            display: none;
+        }
+
+        .prob-list.show {
+            display: block;
+        }
+
+        .prob-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .prob-name {
+            flex: 0 0 120px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .prob-bar-wrap {
+            flex: 1;
+            height: 6px;
+            background: var(--bg-glass);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .prob-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+            transition: width 0.8s ease-out;
+        }
+
+        .prob-value {
+            flex: 0 0 50px;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            text-align: right;
+        }
+
+        /* Examples */
+        .examples {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .examples-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .example-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .example-chip {
+            padding: 8px 14px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .example-chip:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            background: var(--bg-glass);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .footer a {
+            color: var(--primary-light);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            background: var(--danger);
+            color: white;
+            border-radius: 12px;
+            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .quick-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .quick-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 8px 14px;
+            background: rgba(191,162,219,.15);
+            color: #7A669D;
+            border-radius: 999px;
+            margin-bottom: 18px;
+            font-size: .85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-gradient"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="status-pill">
+    ✨ AI Powered
+    </div>
+    
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🎫</div>
+            </div>
+            <h1>Support Ticket Intelligence</h1>
+            <p>AI-powered support operations with intelligent ticket routing and prioritization.</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Input Card -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="icon">✍️</span>
+                    Submit Ticket
+                </h2>
+
+                <form id="ticketForm">
+                    <div class="form-group">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-input" id="subject" placeholder="Brief summary of the issue..."
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" id="description" placeholder="Describe the issue in detail..."
+                            required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn" id="submitBtn">
+                        <span id="btnText">🚀 Classify Ticket</span>
+                        <div class="spinner" id="spinner" style="display: none;"></div>
+                    </button>
+                </form>
+
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="clearForm()">
+                        🗑️ Clear
+                    </button>
+                    <button class="quick-btn" onclick="loadRandomExample()">
+                        🎲 Random Example
+                    </button>
+                </div>
+
+                <div class="examples">
+                    <div class="examples-title">Quick Examples:</div>
+                    <div class="example-chips">
+                        <span class="example-chip" onclick="loadExample('billing')">💳 Billing Issue</span>
+                        <span class="example-chip" onclick="loadExample('technical')">🔧 Technical Bug</span>
+                        <span class="example-chip" onclick="loadExample('account')">👤 Account Help</span>
+                        <span class="example-chip" onclick="loadExample('feature')">💡 Feature Request</span>
+                        <span class="example-chip" onclick="loadExample('general')">❓ General Question</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Card -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="icon">🎯</span>
+                    Classification Results
+                </h2>
+
+                <div class="results" id="results">
+                    <!-- Category Result -->
+                    <div class="result-item">
+                        <div class="result-header">
+                            <span class="result-label">Category</span>
+                            <div class="result-value">
+                                <span class="result-badge" id="categoryBadge">-</span>
+                            </div>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="categoryConfidence"
+                                style="width: 0%; background: var(--primary);"></div>
+                        </div>
+                        <div class="confidence-text" id="categoryConfidenceText">Confidence: -</div>
+
+                        <div class="probabilities">
+                            <div class="prob-title" onclick="toggleProbs('category')">
+                                <span id="categoryArrow">▶</span> All Category Probabilities
+                            </div>
+                            <div class="prob-list" id="categoryProbs"></div>
+                        </div>
+                    </div>
+
+                    <!-- Priority Result -->
+                    <div class="result-item">
+                        <div class="result-header">
+                            <span class="result-label">Priority</span>
+                            <div class="result-value">
+                                <span class="result-badge" id="priorityBadge">-</span>
+                            </div>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="priorityConfidence"
+                                style="width: 0%; background: var(--secondary);"></div>
+                        </div>
+                        <div class="confidence-text" id="priorityConfidenceText">Confidence: -</div>
+
+                        <div class="probabilities">
+                            <div class="prob-title" onclick="toggleProbs('priority')">
+                                <span id="priorityArrow">▶</span> All Priority Probabilities
+                            </div>
+                            <div class="prob-list" id="priorityProbs"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalPredictions">0</div>
+                        <div class="stat-label">Predictions</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avgConfidence">-</div>
+                        <div class="stat-label">Avg Confidence</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="responseTime">-</div>
+                        <div class="stat-label">Response Time</div>
+                    </div>
+                </div>
+
+                <div class="history-section">
+                    <h3>Recent Predictions</h3>
+                    <button
+                        class="history-clear"
+                        onclick="clearHistory()">
+                        Clear
+                    </button>
+                        <div id="historyList">
+                            <p class="history-empty">
+                                No predictions yet
+                            </p>
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Powered by TF-IDF + Logistic Regression • Built with FastAPI</p>
+            <p style="margin-top: 8px;">
+                <a href="/docs" target="_blank">📚 API Docs</a> •
+                <a href="/health" target="_blank">💚 Health Check</a> •
+                <a href="/metrics" target="_blank">📊 Metrics</a>
+            </p>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let predictionCount = 0;
+        let totalConfidence = 0;
+
+        const examples = {
+            billing: {
+                subject: "Charged twice for subscription",
+                description: "I was charged $49.99 twice on my credit card this month for my premium subscription. I only have one account and should only be charged once. Please investigate and refund the duplicate charge."
+            },
+            technical: {
+                subject: "Application crashes on startup",
+                description: "The application crashes immediately after launching on Windows 11. I've tried reinstalling but the problem persists. Error code: 0x80004005. This started happening after the latest update."
+            },
+            account: {
+                subject: "Cannot login to my account",
+                description: "I've been trying to login for an hour but keep getting 'Invalid credentials' error. I'm sure my password is correct. I tried resetting it but the reset email never arrives."
+            },
+            feature: {
+                subject: "Request for dark mode",
+                description: "Would love to see a dark mode option in the app. Many of us work late at night and the bright interface is hard on the eyes. This would greatly improve the user experience."
+            },
+            general: {
+                subject: "Question about pricing plans",
+                description: "I'm interested in upgrading from the free plan but confused about the differences between Pro and Enterprise tiers. Can you explain what features are included in each?"
+            }
+        };
+
+        const categoryClasses = {
+            'Billing': 'category-billing',
+            'Technical': 'category-technical',
+            'Account': 'category-account',
+            'Feature Request': 'category-feature',
+            'General Inquiry': 'category-general'
+        };
+
+        const priorityClasses = {
+            'Critical': 'priority-critical',
+            'High': 'priority-high',
+            'Medium': 'priority-medium',
+            'Low': 'priority-low'
+        };
+
+        document.getElementById('ticketForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await classifyTicket();
+        });
+
+        async function classifyTicket() {
+            const subject = document.getElementById('subject').value;
+            const description = document.getElementById('description').value;
+
+            if (!subject || !description) {
+                showToast('Please fill in both subject and description');
+                return;
+            }
+
+            // Show loading
+            const btn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('spinner');
+
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            spinner.style.display = 'block';
+
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch(`${API_URL}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ subject, description })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const endTime = performance.now();
+                const responseTime = Math.round(endTime - startTime);
+
+                displayResults(data, responseTime);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Failed to classify ticket. Is the API running?');
+            } finally {
+                btn.disabled = false;
+                btnText.style.display = 'inline';
+                spinner.style.display = 'none';
+            }
+        }
+
+        function displayResults(data, responseTime) {
+            const results = document.getElementById('results');
+            results.classList.add('show');
+
+            // Update category
+            const categoryBadge = document.getElementById('categoryBadge');
+            categoryBadge.textContent = data.category;
+            categoryBadge.className = 'result-badge ' + (categoryClasses[data.category] || '');
+
+            const catConf = Math.round(data.confidence_category * 100);
+            document.getElementById('categoryConfidence').style.width = catConf + '%';
+            document.getElementById('categoryConfidenceText').textContent = `Confidence: ${catConf}%`;
+
+            // Update priority
+            const priorityBadge = document.getElementById('priorityBadge');
+            priorityBadge.textContent = data.priority;
+            priorityBadge.className = 'result-badge ' + (priorityClasses[data.priority] || '');
+
+            const priConf = Math.round(data.confidence_priority * 100);
+            document.getElementById('priorityConfidence').style.width = priConf + '%';
+            document.getElementById('priorityConfidenceText').textContent = `Confidence: ${priConf}%`;
+
+            // Update probability lists
+            updateProbList('categoryProbs', data.category_probabilities);
+            updateProbList('priorityProbs', data.priority_probabilities);
+
+            // Update stats
+            predictionCount++;
+            totalConfidence += (data.confidence_category + data.confidence_priority) / 2;
+
+            document.getElementById('totalPredictions').textContent = predictionCount;
+            document.getElementById('avgConfidence').textContent = Math.round(totalConfidence / predictionCount * 100) + '%';
+            document.getElementById('responseTime').textContent = responseTime + 'ms';
+
+            predictionHistory.unshift({
+                category: data.category,
+                priority: data.priority,
+                confidence: Math.round(
+                    data.confidence_category * 100
+                ),
+                timestamp: Date.now()
+            });
+
+            predictionHistory =
+                predictionHistory.slice(0, 5);
+
+            localStorage.setItem(
+                'predictionHistory',
+                JSON.stringify(predictionHistory)
+            );
+
+            renderHistory();
+        }
+
+        function updateProbList(elementId, probs) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+
+            // Sort by probability
+            const sorted = Object.entries(probs).sort((a, b) => b[1] - a[1]);
+
+            sorted.forEach(([name, prob]) => {
+                const percentage = Math.round(prob * 100);
+                container.innerHTML += `
+                    <div class="prob-item">
+                        <span class="prob-name">${name}</span>
+                        <div class="prob-bar-wrap">
+                            <div class="prob-bar" style="width: ${percentage}%"></div>
+                        </div>
+                        <span class="prob-value">${percentage}%</span>
+                    </div>
+                `;
+            });
+        }
+
+        function toggleProbs(type) {
+            const list = document.getElementById(type + 'Probs');
+            const arrow = document.getElementById(type + 'Arrow');
+
+            if (list.classList.contains('show')) {
+                list.classList.remove('show');
+                arrow.textContent = '▶';
+            } else {
+                list.classList.add('show');
+                arrow.textContent = '▼';
+            }
+        }
+
+        function loadExample(type) {
+            const example = examples[type];
+            if (example) {
+                document.getElementById('subject').value = example.subject;
+                document.getElementById('description').value = example.description;
+            }
+        }
+
+        function loadRandomExample() {
+            const types = Object.keys(examples);
+            const randomType = types[Math.floor(Math.random() * types.length)];
+            loadExample(randomType);
+        }
+
+        function clearForm() {
+            document.getElementById('subject').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('results').classList.remove('show');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function clearHistory() {
+
+            predictionHistory = [];
+            localStorage.removeItem(
+                'predictionHistory'
+            );
+            renderHistory();
+            showToast('History cleared');
+        }
+
+        // Check API health on load
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                if (!data.model_loaded) {
+                    showToast('⚠️ Model not loaded. Train the model first.');
+                }
+            } catch (error) {
+                showToast('⚠️ API not reachable. Start the server.');
+            }
+        }
+
+        let predictionHistory =
+        JSON.parse(
+            localStorage.getItem('predictionHistory')
+        ) || [];
+
+        function renderHistory() {
+
+        const container =
+            document.getElementById('historyList');
+
+        if (!predictionHistory.length) {
+
+            container.innerHTML =
+                '<p class="history-empty">No predictions yet</p>';
+
+            return;
+        }
+
+container.innerHTML =
+    predictionHistory
+        .map(item => {
+
+            const minutes =
+                Math.floor(
+                    (Date.now() - item.timestamp)
+                    / 60000
+                );
+
+            const timeText =
+                minutes < 1
+                    ? 'Just now'
+                    : `${minutes} min ago`;
+
+            return `
+                <div class="history-item">
+
+                    <div class="history-main">
+
+                        <div class="history-top">
+
+                            <span class="history-category">
+                                ${item.category}
+                            </span>
+
+                            <span class="history-priority-chip">
+                                ${item.priority}
+                            </span>
+
+                        </div>
+
+                        <span class="history-time">
+                            ${timeText}
+                        </span>
+
+                    </div>
+
+                    <span class="history-confidence">
+                        ${item.confidence}%
+                    </span>
+
+                </div>
+            `;
+        })
+        .join('');
+    }
+        renderHistory();
+        checkHealth();
+    </script>
+</body>
+
+</html>

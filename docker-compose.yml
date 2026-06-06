@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  ticket-classifier:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ticket-classifier-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=info
+    volumes:
+      # Mount model directory for persistence
+      - ./src/models/serialized:/app/src/models/serialized
+      # Mount data directory
+      - ./data:/app/data
+      # Mount visualizations for output
+      - ./visualizations:/app/visualizations
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Optional: Development container with hot reload
+  ticket-classifier-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ticket-classifier-dev
+    ports:
+      - "8001:8000"
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=debug
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+      - ./visualizations:/app/visualizations
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+    profiles:
+      - dev
