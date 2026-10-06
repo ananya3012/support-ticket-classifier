@@ -4,4 +4,4 @@ A production-grade AI/ML system for automatic ticket classification and prioriti
 """
 
 __version__ = "1.0.0"
-__author__ = "Ayan Chatterjee"
+__author__ = "Ananya Gupta"

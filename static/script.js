@@ -1,3 +1,5 @@
+        alert("SCRIPT LOADED");
+        
         const API_URL = 'http://localhost:8000';
         let predictionCount = 0;
         let totalConfidence = 0;
@@ -121,6 +123,7 @@
             updateProbList('priorityProbs', data.priority_probabilities);
 
             // Update stats
+            
             predictionCount++;
             totalConfidence += (data.confidence_category + data.confidence_priority) / 2;
 
