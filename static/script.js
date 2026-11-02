@@ -1,5 +1,4 @@
-        alert("SCRIPT LOADED");
-        
+      
         const API_URL = 'http://localhost:8000';
         let predictionCount = 0;
         let totalConfidence = 0;
