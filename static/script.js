@@ -1,5 +1,5 @@
       
-        const API_URL = 'http://localhost:8000';
+        const API_URL = 'https://support-ticket-classifier-api-oz6x.onrender.com';
         let predictionCount = 0;
         let totalConfidence = 0;
 

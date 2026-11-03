@@ -12,10 +12,9 @@ provides a browser-based interface and a RESTful API built with FastAPI.
 ## Live Application
 
 -   **Frontend:** `https://support-ticket-classifier-static.vercel.app`
--   **Backend API:** `ADD_YOUR_RENDER_URL_HERE` *(add after backend
-    deployment)*
--   **Interactive API documentation:** `ADD_YOUR_RENDER_URL_HERE/docs`
-    *(available after backend deployment)*
+-   **Backend API:** `https://support-ticket-classifier-api-oz6x.onrender.com` 
+-   **Interactive API documentation:** `https://support-ticket-classifier-api-oz6x.onrender.com/docs`
+-    **Health Check:** `https://support-ticket-classifier-api-oz6x.onrender.com/health`
 
 > The frontend is deployed separately from the API. The backend
 > deployment is not considered complete until the Render service is live
@@ -242,6 +241,27 @@ performance depends on the training data and evaluation procedure;
 results should be reported using the latest measured metrics rather than
 assumed or illustrative figures.
 
+## Deployment Architecture
+
+The application follows a decoupled frontend-backend architecture.
+
+| Component | Platform | Technology |
+|---|---|---|
+| Frontend | Vercel | HTML, CSS, JavaScript |
+| Backend | Render | Python, FastAPI |
+| API Server | Render | Uvicorn |
+| API Communication | HTTP/REST | JSON |
+
+### Deployment Workflow
+
+1. Frontend is hosted on Vercel.
+2. Backend REST API is hosted on Render.
+3. Frontend sends HTTP requests to the FastAPI backend.
+4. Backend processes support tickets using trained
+   TF-IDF and Logistic Regression models.
+5. Prediction results, confidence scores and
+   probability distributions are returned as JSON.
+
 ## Deployment
 
 The application uses a separated frontend/backend deployment
@@ -283,17 +303,7 @@ commands match the current codebase. A successful build does not by
 itself prove that model loading or prediction works; verify the service
 logs and test the API endpoints after deployment.
 
-### Connect the frontend to the backend
 
-After Render creates the service, copy its assigned URL and set the API
-base URL in `static/script.js`:
-
-``` javascript
-const API_URL = "https://YOUR-RENDER-SERVICE.onrender.com";
-```
-
-Replace the example with the actual Render URL. Do not use `localhost`
-in the deployed frontend.
 
 ### Configure CORS
 
@@ -309,9 +319,9 @@ are enabled.
 ### Deployment status
 
 -   [x] Static frontend deployed on Vercel
--   [ ] FastAPI backend deployed on Render
--   [ ] Production frontend connected to the deployed backend
--   [ ] Production API health and prediction endpoints verified
+-   [x] FastAPI backend deployed on Render
+-   [x] Production frontend connected to the deployed backend
+-   [x] Production API health and prediction endpoints verified
 
 Update this checklist and the Live Application links after completing
 and testing the backend deployment.
